@@ -41,14 +41,15 @@ def st_search( client_id, path ) :
     total = 1
     sec   = time.time()
 
-    print( 'Start of the search...' + Fore.LIGHTMAGENTA_EX )
+    print( 'Start of the search...' )
 
     while pg < 1000 :
       ch = 'a'
       while ch <= 'z' :
         if n < 50 :
           upd_csv( csv_data, cr_get_request( cr_url( pg, ch, client_id ) ), path )
-          print( ( 'The data was recorded to file. Total lines: ' + str( total ) + 
+          print( ( Fore.WHITE + '[' + time.ctime( time.time() ) + '] ' + Fore.LIGHTMAGENTA_EX + 
+                   'The data was recorded to file. Total lines: ' + str( total ) + 
                    ' Page = ' + str( pg ) + ' Query = ' + ch  ) )
           ch    = chr( ord(ch) + 1 )
           total = total + 1
