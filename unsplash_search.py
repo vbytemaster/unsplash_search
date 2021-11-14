@@ -2,10 +2,12 @@ import requests
 import json
 import csv
 import time
+import colorama
 from requests.models import HTTPError
+from colorama import Fore
 # create url to send
-def cr_url( page, query, client_id ) :
-  return 'https://api.unsplash.com/search/users?page=' + str(page) + '&query=' + query + '&client_id=' + client_id
+def cr_url( page, query, client_id, per_page = 100 ) :
+  return 'https://api.unsplash.com/search/users?page=' + str(page) + '&per_page=' + str(per_page) + '&query=' + query + '&client_id=' + client_id
 # create GET request
 def cr_get_request( url ) :
   return json.loads( requests.get( url ).text )['results']
@@ -24,43 +26,49 @@ def upd_csv( csv_data, json_data, path ) :
       username = 'https://unsplash.com/@' + json_dict['username']
       if not username in csv_data :
         csv_data.add( username )
-        csv_ln = ( username + ',' + str(json_dict['instagram_username']) + ',' +
-                   'https://www.instagram.com/' + str(json_dict['instagram_username']) + ',' +
-                   str(json_dict['twitter_username']) + ',' + str(json_dict['portfolio_url']) + '\n' )
+        csv_ln = ( username + ',' + str( json_dict['instagram_username'] ) + ',' +
+                   'https://www.instagram.com/' + str( json_dict['instagram_username'] ) + ',' +
+                   str( json_dict['twitter_username'] ) + ',' + str( json_dict['portfolio_url'] ) + '\n' )
         fl.write( csv_ln )
 # start search
 def st_search( client_id, path ) :
   try :
+    colorama.init()
+    csv_data = rd_csv( path ) 
+
     n     = 0 
     pg    = 1
-    ch    ='a'
     total = 1
-    sec = time.time()
-    csv_data = rd_csv( path ) 
-    print( 'Start of the search...' )
+    sec   = time.time()
+
+    print( 'Start of the search...' + Fore.LIGHTMAGENTA_EX )
 
     while pg < 1000 :
+      ch = 'a'
       while ch <= 'z' :
         if n <= 50 :
           upd_csv( csv_data, cr_get_request( cr_url( pg, ch, client_id ) ), path )
           ch = chr( ord(ch) + 1 )
-          print( 'The data was recorded to file. Total lines: ' + str( total )  )
+          print( ( 'The data was recorded to file. Total lines: ' + str( total ) + 
+                   ' Page = ' + str( pg ) + ' Query = ' + ch  ) )
           total = total + 1
+          n     = n + 1
         else :
-          dt = time.time() - sec
-          print( ( 'The limit on sending requests has been exceeded.\n'
-                   'Sending will resume after: ' + str( dt ) + ' sec' ) )
-          time.sleep( 3600 - dt )
-          print( "Resuming sending requests" )
+          sleep_sec = 3600 - time.time() + sec
+          print( ( Fore.LIGHTBLUE_EX + 'The limit on sending requests has been exceeded.\n'
+                   'Sending will resume after: ' + str( sleep_sec ) + ' sec' ) )
+          time.sleep( sleep_sec )
+          print( "Resuming sending requests" + Fore.LIGHTMAGENTA_EX )
           n   = 0
           sec = time.time()
       pg = pg + 1
 
   except HTTPError as http_err :
-    print( f'HTTP error occurred: {http_err}' )
+    print( Fore.RED + f'HTTP error occurred: {http_err}' )
   except Exception as err :
-    print( f'Other error occurred: {err}' )
+    print( Fore.RED + f'Other error occurred: {err}' )
   else :
-    print( 'End of the search' )
+    print( Fore.WHITE + 'End of the search' )
 # run 
 st_search( client_id = 'vm0iCSRKZ2Y16Bwjp5fCkF6LOQbgcGiJui3tbYCEktE', path = 'unsplash_authors.csv' )
+input()
