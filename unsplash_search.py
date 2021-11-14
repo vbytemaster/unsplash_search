@@ -46,11 +46,11 @@ def st_search( client_id, path ) :
     while pg < 1000 :
       ch = 'a'
       while ch <= 'z' :
-        if n <= 50 :
+        if n < 50 :
           upd_csv( csv_data, cr_get_request( cr_url( pg, ch, client_id ) ), path )
-          ch = chr( ord(ch) + 1 )
           print( ( 'The data was recorded to file. Total lines: ' + str( total ) + 
                    ' Page = ' + str( pg ) + ' Query = ' + ch  ) )
+          ch    = chr( ord(ch) + 1 )
           total = total + 1
           n     = n + 1
         else :
